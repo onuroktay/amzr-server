@@ -1,0 +1,63 @@
+1) Supprimer index
+DELETE amazonreader
+
+2) Créer index
+PUT /amazonreader
+{
+  "settings" : {
+    "index" : { "number_of_shards" : 1, "number_of_replicas" : 0
+    } }
+}
+
+3) Créer le schéma pour forcer les prix en float (plutôt qu'en long)
+PUT /amazonreader/_mapping/item
+{
+  "item" : {
+    "properties" : {
+      "brand": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword", "ignore_above": 256
+          } }
+      },
+      "categories": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword", "ignore_above": 256
+          } }
+      }, "id": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword", "ignore_above": 256
+          } }
+      }, "imUrl": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword", "ignore_above": 256
+          } }
+      }, "price": {
+        "type": "float"
+      },
+      "related": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword", "ignore_above": 256
+          } }
+      }, "title": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword", "ignore_above": 256
+          }
+        }
+      }
+    }
+  }
+}
+
+4) Lancer l'importation

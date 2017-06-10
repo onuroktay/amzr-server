@@ -1,0 +1,120 @@
+GET amazonreader/item/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+        "match": 
+          {
+            "categories": ""
+          }
+        },
+        {
+          "match": {
+            "title": "Switzerland"
+          }
+        }
+      ]
+    }
+  }
+}
+
+###################################
+GET amazonreader/item/_search
+{"query": {
+    "bool": {
+        "must": [{
+          "match": {
+            "categories": {
+              "query": "CDs"
+            }
+          }
+        },{
+          "match": {
+            "title": {
+              "query": "quick"
+            }
+          }
+        }],"filter": {
+        "range": {
+          "price": {"lte": 1000}
+        }
+      }
+     }
+    }
+   }
+
+
+###################################
+
+{"query": {
+    "bool": {
+        "must": [{
+          "match": {
+            "categories": {
+              "query": "CDs"
+            }
+          }
+        },{
+          "match": {
+            "title": {
+              "query": "quick"
+            }
+          }
+        }],"filter": {
+        "range": {
+          "price": {"gte": 102,"lte": 1000}
+        }
+      }
+     }
+    },
+	"sort": [{
+	"price": {
+		"order": "desc"
+	}
+	}
+		],
+	"size": 3, "from": 0
+   }
+
+
+
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "categories": {
+              "query": "CDs"
+            }
+          }
+        },
+        {
+          "match": {
+            "title": {
+              "query": "quick"
+            }
+          }
+        }
+      ],
+      "filter": {
+        "range": {
+          "price": {
+            "gte": 102,
+            "lte": 1000
+          }
+        }
+      }
+    }
+  },
+  "sort": [
+    {
+      "price": {
+        "order": "desc"
+      }
+    }
+  ],
+  "size": 3,
+  "from": 0
+}
