@@ -3,8 +3,8 @@ package OnurTPIES
 import (
 	"encoding/json"
 	"errors"
-	"github.com/onuroktay/amazon-reader/AmzR-Server/user-data"
-	"github.com/onuroktay/amazon-reader/AmzR-Server/util"
+	"github.com/onuroktay/amazon-reader/amzr-server/user-data"
+	"github.com/onuroktay/amazon-reader/amzr-server/util"
 	"golang.org/x/net/context"
 	"fmt"
 )

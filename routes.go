@@ -13,11 +13,11 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 
-	"github.com/onuroktay/amazon-reader/AmzR-Server/elasticsearch"
-	"github.com/onuroktay/amazon-reader/AmzR-Server/item-data"
-	"github.com/onuroktay/amazon-reader/AmzR-Server/user-data"
-	"github.com/onuroktay/amazon-reader/AmzR-Server/util"
-	"github.com/onuroktay/amazon-reader/Analyse_fichier_json/step10"
+	"github.com/onuroktay/amazon-reader/amzr-server/elasticsearch"
+	"github.com/onuroktay/amazon-reader/amzr-server/item-data"
+	"github.com/onuroktay/amazon-reader/amzr-server/user-data"
+	"github.com/onuroktay/amazon-reader/amzr-server/util"
+	"github.com/onuroktay/amazon-reader/analyse-fichier-json/step10"
 	"os"
 	"github.com/adams-sarah/test2doc/test"
 )
@@ -38,7 +38,6 @@ func routes() {
 	test.RegisterURLVarExtractor(mux.Vars)
 
 	r.HandleFunc("/", startPage).Methods("GET")
-	r.HandleFunc("/info", info).Methods("GET")
 
 	r.HandleFunc("/login", checkLoginValidity).Methods("POST") // check login Validity
 	r.HandleFunc("/logout", logout).Methods("GET")             // logout
@@ -490,16 +489,4 @@ func preflightRequest(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, _ := json.Marshal(true)
 	w.Write(jsonResponse)
-}
-
-func info(w http.ResponseWriter, r *http.Request) {
-	setHeader(w, r)
-
-	w.WriteHeader(http.StatusOK)
-	resp, _ := json.Marshal(&Response{
-		Data:    "Server is working",
-		Success: true,
-	})
-
-	w.Write(resp)
 }

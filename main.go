@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/onuroktay/amazon-reader/AmzR-Server/elasticsearch"
+	"github.com/onuroktay/amazon-reader/amzr-server/elasticsearch"
 	"log"
 	"net/http"
 )

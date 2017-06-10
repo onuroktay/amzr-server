@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/onuroktay/amazon-reader/AmzR-Server/elasticsearch"
-	"github.com/onuroktay/amazon-reader/AmzR-Server/item-data"
-	"github.com/onuroktay/amazon-reader/AmzR-Server/user-data"
+	"github.com/onuroktay/amazon-reader/amzr-server/elasticsearch"
+	"github.com/onuroktay/amazon-reader/amzr-server/item-data"
+	"github.com/onuroktay/amazon-reader/amzr-server/user-data"
 )
 
 // DATABASE contains an interface with the method to implement in order to use de database

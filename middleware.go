@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"github.com/dgrijalva/jwt-go"
 	"errors"
-	"github.com/onuroktay/amazon-reader/AmzR-Server/util"
+	"github.com/onuroktay/amazon-reader/amzr-server/util"
 )
 
 func checkAuth(minRoleValue int, next http.Handler) http.Handler {
