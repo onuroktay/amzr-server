@@ -6,12 +6,39 @@ import (
 	"github.com/onuroktay/amazon-reader/amzr-server/user-data"
 	"github.com/onuroktay/amazon-reader/amzr-server/util"
 	"golang.org/x/net/context"
-	"fmt"
 )
 
 func (es *ElasticSearch) DeleteAccount(id string) error {
+	var nbAdmin int
+	var isAdmin bool
 
-	_, err := es.client.Delete().
+
+	// Get users
+	users, err := es.GetUsers()
+
+	if err != nil {
+		return err
+	}
+
+	// Look for Admin
+	for _, user := range users {
+		// Check if last Admin
+		if user.RoleValue == OnurTPIUser.ADMIN {
+			nbAdmin++
+		}
+
+		// Check if user to delete is Admin
+		if user.ID == id && user.RoleValue == OnurTPIUser.ADMIN  {
+			isAdmin = true
+		}
+	}
+
+	// Check to have at least one admin
+	if isAdmin && nbAdmin == 1{
+		return errors.New("Sorry, last admin can't be deleted")
+	}
+
+	_, err = es.client.Delete().
 		Index(es._indexName).
 		Type(getESType(USER)).
 		Id(id).
@@ -23,7 +50,6 @@ func (es *ElasticSearch) DeleteAccount(id string) error {
 
 // SaveAccount save an acount in ElasticSearch
 func (es *ElasticSearch) CreateAccount(account *OnurTPIUser.Account) (string, error) {
-
 	put1, err := es.client.Index().
 		Index(es._indexName).
 		Type(getESType(USER)).
@@ -94,11 +120,9 @@ func (es *ElasticSearch) GetAccountByUserNameInDB(cred *OnurTPIUser.CredentialsC
 	var query = `
 {
   "query": {
-    "term" : { "username" :"` + util.CleanQuote(cred.UserName) + `"  }
+    "match_phrase" : { "username" :"` + util.CleanQuote(cred.UserName) + `"  }
   }
 }`
-
-	fmt.Println(query)
 
 	res, err := es.executeQuery(getESType(USER), "", query)
 	if err != nil {
@@ -130,15 +154,9 @@ func (es *ElasticSearch) GetAccountByIDInDB(id string) (*OnurTPIUser.Account, er
 	var query = `
 {
   "query": {
-    "term" : { "_id" :"` + id + `"  }
+    "match_phrase" : { "_id" :"` + id + `"  }
   }
 }`
-
-	//res, err := es.client.Get().
-	//	Index(es._indexName).
-	//	Type(USER).
-	//	Id(id).
-	//	Do(context.Background())
 
 	res, err := es.executeQuery(getESType(USER), "", query)
 	if err != nil {

@@ -7,15 +7,6 @@ import (
 	"net/http"
 )
 
-const (
-	//USER ROLE
-	USER = 1
-	// EDITOR ROLE
-	EDITOR = 2
-	// ADMIN ROLE
-	ADMIN = 3
-)
-
 var (
 	// path is a string
 	path     = "/Users/onur/Go/src/github.com/onuroktay/amazon-reader/AmzR-Client/dist"

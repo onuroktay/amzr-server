@@ -19,8 +19,8 @@ import (
 	"github.com/onuroktay/amazon-reader/amzr-server/util"
 	"github.com/onuroktay/amazon-reader/analyse-fichier-json/step10"
 	"os"
-	"github.com/adams-sarah/test2doc/test"
 )
+
 // SubHits contains a sub-data structure returns by elasticsearch
 
 // Response contains answer send to client
@@ -32,10 +32,6 @@ type Response struct {
 func routes() {
 	// Here we are instantiating the gorilla/mux router
 	r := mux.NewRouter()
-	r.KeepContext = true
-
-	// Use mux.Vars func as URLVarExtractor
-	test.RegisterURLVarExtractor(mux.Vars)
 
 	r.HandleFunc("/", startPage).Methods("GET")
 
@@ -52,42 +48,44 @@ func routes() {
 	//	http.HandlerFunc(getUser))).Methods("GET")
 
 	// Get users information
-	r.Handle("/users", checkAuth(ADMIN,
+	r.Handle("/users", checkAuth(OnurTPIUser.ADMIN,
 		http.HandlerFunc(getUsers))).Methods("GET")
 
-	// Update user
+	// Preflight Request for users PUT and DELETE
 	r.HandleFunc("/user/{id}/{role}", preflightRequest).Methods("OPTIONS") // preflight request
 
-	r.Handle("/user/{id}/{role}", checkAuth(ADMIN,
+	// Update user
+	r.Handle("/user/{id}/{role}", checkAuth(OnurTPIUser.ADMIN,
 		http.HandlerFunc(updateUser))).Methods("PUT") // update rolevalue in db
 
 	// Delete user
 	r.HandleFunc("/user/{id}", preflightRequest).Methods("OPTIONS") // preflight request
-	r.Handle("/user/{id}", checkAuth(ADMIN,
+	r.Handle("/user/{id}", checkAuth(OnurTPIUser.ADMIN,
 		http.HandlerFunc(deleteUser))).Methods("DELETE") // update rolevalue in db
 
 	/* RUD ITEMS */
 
 	// Get Item information in DB
-	r.Handle("/item/{id}", checkAuth(USER,
+	r.Handle("/item/{id}", checkAuth(OnurTPIUser.USER,
 		http.HandlerFunc(getItem))).Methods("GET")
 
 	// Get Items information in DB
-	r.Handle("/items", checkAuth(USER,
+	r.Handle("/items", checkAuth(OnurTPIUser.USER,
 		http.HandlerFunc(getItems))).Methods("POST") // get items in db
 
-	// Update item
+	// Preflight Request for items PUT and DELETE
 	r.HandleFunc("/item/{id}", preflightRequest).Methods("OPTIONS") // preflight request
-	r.Handle("/item/{id}", checkAuth(EDITOR,
+
+	// Update item
+	r.Handle("/item/{id}", checkAuth(OnurTPIUser.EDITOR,
 		http.HandlerFunc(updateItem))).Methods("PUT") // update item
 
 	// Delete item
-	r.HandleFunc("/item/{id}", preflightRequest).Methods("OPTIONS") // preflight request
-	r.Handle("/item/{id}", checkAuth(EDITOR,
+	r.Handle("/item/{id}", checkAuth(OnurTPIUser.EDITOR,
 		http.HandlerFunc(deleteItem))).Methods("DELETE") // delete item
 	// <----
 
-	r.Handle("/import", checkAuth(ADMIN,
+	r.Handle("/import", checkAuth(OnurTPIUser.ADMIN,
 		http.HandlerFunc(executeImport))).Methods("POST") // import data from json file
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir(path))) // to get resoucres (like http, js, css, png, ...)
@@ -135,8 +133,6 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 
 	// if the error is different from null
 	if err != nil {
-		log.Print(err.Error())
-
 		w.WriteHeader(http.StatusInternalServerError)
 		resp, _ := json.Marshal(err.Error())
 		w.Write(resp)
@@ -165,7 +161,7 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 
 	found, _ := database.accesser.CheckIfUserExistsInDB(credential) // We check if the user is in DB
 	if found == true {
-		w.Write([]byte("Sorry, username already exists!"))
+		writeResponse(w, r, []byte("Sorry, username already exists!"), false)
 		return
 	}
 
@@ -191,6 +187,8 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, err, false)
 		return
 	}
+
+
 
 	// save the login in the database
 	err = database.accesser.UpdateRole(idUser, userRole)
@@ -231,18 +229,18 @@ func checkLoginValidity(w http.ResponseWriter, r *http.Request) {
 		return // If we arrive until then on does not execute the rest of code
 	}
 	if err := r.Body.Close(); err != nil {
-		sendInternalError(w, r, err)
+		writeResponse(w, r, err, false)
 		return // If we arrive until then on does not execute the rest of code
 	}
 
 	// We read the body
 	if err := json.Unmarshal(body, &credential); err != nil {
-		sendInternalError(w, r, err)
+		writeResponse(w, r, err, false)
 		return
 	}
 
 	account, err := database.accesser.GetAccountByUserNameInDB(credential) // We check if the user is in DB
-	if err != nil {
+	if account == nil || err != nil {
 		writeResponse(w, r, "Wrong login", false)
 		return
 	}
@@ -256,7 +254,7 @@ func checkLoginValidity(w http.ResponseWriter, r *http.Request) {
 	// Create Token, with session data
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"IdUser": account.ID,
-		"Expire": time.Now().Add(24 * time.Hour * 365 * 99), // 99 years -> for ever
+		"Expire": time.Now().Add(24 * time.Hour * 32), // 32 days
 	})
 
 	// Sign and get the complete encoded token as a string using the secret key
@@ -279,12 +277,12 @@ func checkLoginValidity(w http.ResponseWriter, r *http.Request) {
 
 	//expire := time.Now().AddDate(0, 0, 1)
 	cookie := http.Cookie{
-		Name:    "onurAuth",
-		Value:   tokenString,
-		Path:    "/",
-		Expires: expire,
-		//Secure:   true,
-		//HttpOnly: true,
+		Name:     "onurAuth",
+		Value:    tokenString,
+		Path:     "/",
+		Expires:  expire,
+		Secure:   true,
+		HttpOnly: true,
 	}
 
 	http.SetCookie(w, &cookie)
@@ -461,14 +459,6 @@ func CastInt64ToString(value int64) string {
 	return strconv.FormatInt(value, 10)
 }
 
-// We send an error
-func sendInternalError(w http.ResponseWriter, r *http.Request, err error) {
-	setHeader(w, r)
-
-	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte("Sorry, an error is occurred: " + err.Error()))
-}
-
 func writeResponse(w http.ResponseWriter, r *http.Request, data interface{}, success bool) {
 	setHeader(w, r)
 
@@ -482,10 +472,7 @@ func writeResponse(w http.ResponseWriter, r *http.Request, data interface{}, suc
 }
 
 func preflightRequest(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-	w.Header().Set("Access-Control-Allow-Methods", "PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "origin, content-type, accept")
+	setHeader(w, r)
 
 	jsonResponse, _ := json.Marshal(true)
 	w.Write(jsonResponse)

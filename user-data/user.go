@@ -2,6 +2,15 @@ package OnurTPIUser
 
 import "golang.org/x/crypto/bcrypt"
 
+const (
+	//USER ROLE
+	USER = 1
+	// EDITOR ROLE
+	EDITOR = 2
+	// ADMIN ROLE
+	ADMIN = 3
+)
+
 // CredentialsClient contains login data from client
 type CredentialsClient struct {
 	UserName string `json:"username"`
