@@ -28,7 +28,7 @@ type Response struct {
 	Data    interface{} `json:"data"`
 	Success bool        `json:"success"`
 }
-
+//toto
 func routes() {
 	// Here we are instantiating the gorilla/mux router
 	r := mux.NewRouter()
