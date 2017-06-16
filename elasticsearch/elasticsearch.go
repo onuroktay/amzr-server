@@ -77,6 +77,8 @@ func (es *ElasticSearch) createIndexIfNotExist() error {
 }
 
 func (es *ElasticSearch) executeQuery(_type, search, query string) ([]byte, error) {
+
+	fmt.Println("query 2b exec:",query)
 	// Transform string into io.Reader
 	body := strings.NewReader(query)
 

@@ -34,6 +34,9 @@ func routes() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", startPage).Methods("GET")
+	r.PathPrefix("/app/").HandlerFunc(startPage).Methods("GET")
+	//r.HandleFunc("/login", startPage).Methods("GET")
+	//r.HandleFunc("/register", startPage).Methods("GET")
 
 	r.HandleFunc("/login", checkLoginValidity).Methods("POST") // check login Validity
 	r.HandleFunc("/logout", logout).Methods("GET")             // logout
@@ -88,7 +91,7 @@ func routes() {
 	r.Handle("/import", checkAuth(OnurTPIUser.ADMIN,
 		http.HandlerFunc(executeImport))).Methods("POST") // import data from json file
 
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir(path))) // to get resoucres (like http, js, css, png, ...)
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir(path))) // to get resources (like http, js, css, png, ...)
 	http.Handle("/", r)
 }
 
@@ -97,7 +100,7 @@ func startPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
 
-	http.ServeFile(w, r, "/Users/onur/Go/src/github.com/onuroktay/amazon-reader/AmzR-Client/dist/index.html")
+	http.ServeFile(w, r, path + "index.html")
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {

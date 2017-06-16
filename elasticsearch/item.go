@@ -210,7 +210,7 @@ func queryFilter(criteria *Search) string {
 }
 
 func filterPriceFrom(criteria *Search) string {
-	priceFrom, _ := strconv.Atoi(criteria.PriceFrom)
+	priceFrom, _ := strconv.ParseFloat(criteria.PriceFrom, 64)
 	if priceFrom <= 0 {
 		return ""
 	}
@@ -219,7 +219,7 @@ func filterPriceFrom(criteria *Search) string {
 }
 
 func filterPriceTo(criteria *Search) string {
-	priceFrom, _ := strconv.Atoi(criteria.PriceTo)
+	priceFrom, _ := strconv.ParseFloat(criteria.PriceTo, 64)
 	if priceFrom <= 0 {
 		return ""
 	}
